@@ -1,7 +1,8 @@
 import os
 import ctypes
 import subprocess
-from ghost_optimizer.tweaks.cleaner import BaseTweak, logger
+from ghost_optimizer.core import BaseTweak
+from ghost_optimizer.tweaks.cleaner import logger
 
 class TelemetryDisabler(BaseTweak):
     @property

@@ -1,29 +1,12 @@
 import os
 import shutil
 import logging
-from abc import ABC, abstractmethod
+
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("GhostOptimizer")
 
-class BaseTweak(ABC):
-    @property
-    @abstractmethod
-    def name(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        pass
-
-    @abstractmethod
-    def apply(self) -> bool:
-        pass
-
-    @abstractmethod
-    def restore(self) -> bool:
-        pass
+from ghost_optimizer.core import BaseTweak
 
 class TempCleaner(BaseTweak):
     @property
