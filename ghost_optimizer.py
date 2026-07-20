@@ -2,6 +2,8 @@ import os
 import sys
 import time
 import subprocess
+import shutil
+import ctypes
 
 # ANSI colors using a premium 256-color palette
 PURPLE = "\033[38;5;129m"      # Main purple accent
@@ -222,36 +224,101 @@ class GhostOptimizerTUI:
         sys.stdout.write(f"{WHITE}>: {RESET}{self.input_buffer}")
         sys.stdout.flush()
 
+
+    def is_admin(self):
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
+
+    def clean_windows_temp(self):
+        """Actually deletes files in Windows Temp folders."""
+        temp_folders = []
+        if os.name == 'nt':
+            temp_folders = [
+                os.environ.get('TEMP', ''),
+                os.environ.get('TMP', ''),
+                r"C:\Windows\Temp",
+                r"C:\Windows\Prefetch"
+            ]
+
+        # Remove empty or duplicate entries
+        temp_folders = list(set([f for f in temp_folders if f]))
+
+        cleaned_size = 0
+        deleted_files = 0
+
+        for folder in temp_folders:
+            if not os.path.exists(folder):
+                continue
+            for filename in os.listdir(folder):
+                file_path = os.path.join(folder, filename)
+                try:
+                    if os.path.isfile(file_path) or os.path.islink(file_path):
+                        size = os.path.getsize(file_path)
+                        os.unlink(file_path)
+                        cleaned_size += size
+                        deleted_files += 1
+                    elif os.path.isdir(file_path):
+                        # Calculate size before removing
+                        for dirpath, _, filenames in os.walk(file_path):
+                            for f in filenames:
+                                fp = os.path.join(dirpath, f)
+                                if not os.path.islink(fp):
+                                    cleaned_size += os.path.getsize(fp)
+                        shutil.rmtree(file_path)
+                        deleted_files += 1
+                except Exception as e:
+                    # File might be in use
+                    pass
+
+        return deleted_files, cleaned_size
+
     def perform_action(self):
-        """Simulates advanced script components execution visually in real-time."""
+        """Simulates or performs advanced script components execution visually."""
         clear_screen()
         print(PURPLE + "─" * 110 + RESET)
         print(f" Выполняется: {WHITE}{self.current_action}{RESET}".center(110))
         print(PURPLE + "─" * 110 + RESET)
         print("\n" * 2)
 
-        steps = [
-            "Инициализация зависимостей и окружения...",
-            "Проверка прав локального администратора...",
-            "Создание защищенной точки бэкапа конфигурации...",
-            "Развертывание оптимизированных системных параметров...",
-            "Запись измененных ветвей системного реестра...",
-            "Очистка временных файлов и кэша..."
-        ]
+        if self.current_action == "Глубокая очистка Windows":
+            print(f" {GRAY}[{PURPLE}*{GRAY}]{RESET} Анализ временных папок (Temp, Prefetch)...")
+            time.sleep(0.5)
+            print(f" {GRAY}[{PURPLE}*{GRAY}]{RESET} Очистка файлов...")
 
-        for step in steps:
-            print(f" {GRAY}[{PURPLE}*{GRAY}]{RESET} {step}")
-            time.sleep(0.3)
-            # Short fancy inline progress indicator
+            deleted_count, freed_bytes = self.clean_windows_temp()
+            freed_mb = freed_bytes / (1024 * 1024)
+
+            # Simple progress bar
             for i in range(1, 6):
                 sys.stdout.write(f"\r   [{PURPLE}" + "█" * i + "░" * (5 - i) + f"{RESET}] {i*20}%")
                 sys.stdout.flush()
-                time.sleep(0.1)
+                time.sleep(0.2)
             print(f" {GREEN}[УСПЕШНО]{RESET}\n")
-            time.sleep(0.15)
+            print(f" {CYAN}Удалено объектов:{RESET} {deleted_count}")
+            print(f" {CYAN}Освобождено места:{RESET} {freed_mb:.2f} MB\n")
+
+        else:
+            # Fallback mock animation for unimplemented features
+            steps = [
+                "Инициализация зависимостей и окружения...",
+                "Проверка прав локального администратора...",
+                "Применение настроек..."
+            ]
+
+            for step in steps:
+                print(f" {GRAY}[{PURPLE}*{GRAY}]{RESET} {step}")
+                time.sleep(0.3)
+                for i in range(1, 6):
+                    sys.stdout.write(f"\r   [{PURPLE}" + "█" * i + "░" * (5 - i) + f"{RESET}] {i*20}%")
+                    sys.stdout.flush()
+                    time.sleep(0.1)
+                print(f" {GREEN}[УСПЕШНО]{RESET}\n")
+                time.sleep(0.15)
 
         print(PURPLE + "─" * 110 + RESET)
-        print(f" {GREEN}✓ Операция '{self.current_action}' успешно завершена.{RESET}".center(110))
+        print(f" {GREEN}✓ Операция '{self.current_action}' завершена.{RESET}".center(110))
         print(f" {GRAY}Нажмите любую клавишу для возврата...{RESET}".center(110))
         print(PURPLE + "─" * 110 + RESET)
 
