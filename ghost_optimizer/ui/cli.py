@@ -14,6 +14,11 @@ from ghost_optimizer.tweaks.cleaner import TempCleaner
 from ghost_optimizer.tweaks.services import SysMainDisabler
 from ghost_optimizer.tweaks.network import NetworkOptimizer
 from ghost_optimizer.tweaks.telemetry import TelemetryDisabler
+from ghost_optimizer.tweaks.general import (
+    GeneralTweaks, PerformanceTweaks, NvidiaProfile,
+    LatencyTweaks, KeyboardMouseTweaks, PowerplanTweaks,
+    HealthTweaks, DebloatTweaks, OtherTweaks
+)
 
 console = Console()
 
@@ -30,10 +35,19 @@ class GhostOptimizerUI:
     def __init__(self):
         self.sys_info = get_system_info()
         self.tweaks = {
-            "1": TelemetryDisabler(),
-            "2": NetworkOptimizer(),
-            "3": SysMainDisabler(),
-            "4": TempCleaner(),
+            "1": GeneralTweaks(),
+            "2": PerformanceTweaks(),
+            "3": NetworkOptimizer(),
+            "4": NvidiaProfile(),
+            "5": LatencyTweaks(),
+            "6": KeyboardMouseTweaks(),
+            "7": TempCleaner(),
+            "8": TelemetryDisabler(),
+            "9": SysMainDisabler(),
+            "10": PowerplanTweaks(),
+            "11": HealthTweaks(),
+            "12": DebloatTweaks(),
+            "13": OtherTweaks()
         }
         self.status_message = "Готов к работе"
 
@@ -41,9 +55,15 @@ class GhostOptimizerUI:
     #  Header
     # ------------------------------------------------------------------ #
     def generate_header(self) -> Panel:
-        title = Text()
-        title.append("GHOST", style=f"bold {ACCENT}")
-        title.append(" OPTIMIZER", style=f"bold white")
+        ascii_art = """
+ ██████╗ ██╗  ██╗ ██████╗ ███████╗████████╗      ██████╗ ██████╗ ████████╗██╗███╗   ███╗██╗███████╗███████╗██████╗
+██╔════╝ ██║  ██║██╔═══██╗██╔════╝╚══██╔══╝     ██╔═══██╗██╔══██╗╚══██╔══╝██║████╗ ████║██║╚══███╔╝██╔════╝██╔══██╗
+██║ ███╗ ███████║██║   ██║███████╗   ██║        ██║   ██║██████╔╝   ██║   ██║██╔████╔██║██║  ███╔╝ █████╗  ██████╔╝
+██║  ██║ ██╔══██║██║   ██║╚════██║   ██║        ██║   ██║██╔═══╝    ██║   ██║██║╚██╔╝██║██║ ███╔╝  ██╔══╝  ██╔══██╗
+╚██████║ ██║  ██║╚██████╔╝███████║   ██║        ╚██████╔╝██║        ██║   ██║██║ ╚═╝ ██║██║███████╗███████╗██║  ██║
+ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚══════╝   ╚═╝         ╚═════╝ ╚═╝        ╚═╝   ╚═╝╚═╝     ╚═╝╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
+"""
+        title = Text(ascii_art, style=f"bold {ACCENT}", justify="center")
 
         subtitle = Text("Оптимизация системы в один клик", style=f"italic {MUTED}")
 
@@ -105,7 +125,12 @@ class GhostOptimizerUI:
         table.add_column("Оптимизация", style="bold white", ratio=2)
         table.add_column("Описание", style=MUTED, ratio=3)
 
-        icons = {"1": "📡", "2": "🌐", "3": "🧠", "4": "🧹"}
+        icons = {
+            "1": "🛠", "2": "⚡", "3": "🌐", "4": "🎮",
+            "5": "⏱", "6": "⌨", "7": "🧹", "8": "📡",
+            "9": "🧠", "10": "🔋", "11": "🛡", "12": "🗑",
+            "13": "⚙"
+        }
 
         for key, tweak in self.tweaks.items():
             table.add_row(
@@ -114,7 +139,9 @@ class GhostOptimizerUI:
                 tweak.description,
             )
 
-        table.add_row("⏻ Q", "Выход", "Закрыть приложение", style=MUTED)
+        table.add_row("A", "Apply All", "Применить все твики", style=f"bold {OK}")
+        table.add_row("R", "Revert All", "Отменить все твики", style=f"bold {ERR}")
+        table.add_row("Q", "Выход", "Закрыть приложение", style=MUTED)
 
         return Panel(
             table,
@@ -132,6 +159,10 @@ class GhostOptimizerUI:
         hint = Text()
         hint.append(" ↵ ", style=f"bold {BG_PANEL} on {ACCENT}")
         hint.append(" Выбрать   ", style=MUTED)
+        hint.append(" A ", style=f"bold {BG_PANEL} on {OK}")
+        hint.append(" Применить все   ", style=MUTED)
+        hint.append(" R ", style=f"bold {BG_PANEL} on {ERR}")
+        hint.append(" Отменить все   ", style=MUTED)
         hint.append(" Q ", style=f"bold {BG_PANEL} on {ACCENT}")
         hint.append(" Выход", style=MUTED)
 
@@ -150,7 +181,7 @@ class GhostOptimizerUI:
     def build_layout(self) -> Layout:
         layout = Layout()
         layout.split_column(
-            Layout(self.generate_header(), size=5),
+            Layout(self.generate_header(), size=10),
             Layout(name="main", ratio=1),
             Layout(self.generate_footer(), size=3),
         )
@@ -160,10 +191,30 @@ class GhostOptimizerUI:
         )
         return layout
 
+    def apply_all(self):
+        self.status_message = "Применяем все твики..."
+        console.clear()
+        for key in sorted(self.tweaks.keys(), key=int):
+            self.run_task(key, wait_for_input=False)
+        self.status_message = "Все твики применены успешно"
+        console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
+
+    def revert_all(self):
+        self.status_message = "Отменяем все твики..."
+        console.clear()
+        for key in sorted(self.tweaks.keys(), key=int):
+            tweak = self.tweaks[key]
+            console.print(f"[bold {ERR}]Отменяем {tweak.name}...[/]")
+            if hasattr(tweak, "restore"):
+                tweak.restore()
+            time.sleep(0.5)
+        self.status_message = "Все твики отменены"
+        console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
+
     # ------------------------------------------------------------------ #
     #  Выполнение задачи с прогресс-баром
     # ------------------------------------------------------------------ #
-    def run_task(self, task_id: str):
+    def run_task(self, task_id: str, wait_for_input: bool = True):
         tweak = self.tweaks.get(task_id)
         if not tweak:
             return
@@ -183,7 +234,7 @@ class GhostOptimizerUI:
             task = progress.add_task(f"[white]Применение...", total=100)
 
             for _ in range(50):
-                time.sleep(0.02)
+                time.sleep(0.01)
                 progress.update(task, advance=1)
 
             success = tweak.apply()
@@ -212,7 +263,8 @@ class GhostOptimizerUI:
                 )
             )
 
-        console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
+        if wait_for_input:
+            console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
 
     # ------------------------------------------------------------------ #
     #  Главный цикл
@@ -231,6 +283,10 @@ class GhostOptimizerUI:
                 console.clear()
                 console.print(Align.center(Text("До встречи! 👋", style=f"bold {ACCENT}")))
                 break
+            elif choice == "A":
+                self.apply_all()
+            elif choice == "R":
+                self.revert_all()
             elif choice in self.tweaks:
                 console.clear()
                 self.run_task(choice)
