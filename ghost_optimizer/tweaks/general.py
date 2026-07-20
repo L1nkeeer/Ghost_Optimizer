@@ -128,24 +128,119 @@ class LatencyTweaks(BaseTweak):
     @property
     def name(self):
         return "Latency & Input-Lag"
+
     @property
     def description(self):
-        return "Minimizes system latency and improves responsiveness (Stub)."
+        return "Minimizes system latency and improves responsiveness."
+
     def apply(self) -> bool:
-        return True
+        if not winreg:
+            logger.error("Registry manipulation is only supported on Windows.")
+            return False
+
+        success = True
+
+        tweaks = [
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "SystemResponsiveness", 10),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "AlwaysOn", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "NoLazyMode", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "TimerResolution", 1),
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete", "Append Completion", "yes", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\AutoComplete", "AutoSuggest", "yes", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "menuShowDelay", "100", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "MouseHoverTime", "20", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "LowLevelHooksTimeout", "300", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "AutoEndTasks", "1", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "WaitToKillAppTimeout", "3000", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "HungAppTimeout", "2000", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "ForegroundLockTimeout", 50),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseHoverTime", "20", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\Explorer\Advanced", "ExtendedUIHoverTime", 20),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control", "WaitToKillServiceTimeout", "3000", winreg.REG_SZ),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "MinTimerResolution", 5000),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "ClockTimerResolution", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "DistributeTimers", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Power", "ExitLatency", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Power", "ExitLatencyCheckEnabled", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Power", "Latency", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Power", "LatencyToleranceDefault", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\GraphicsDrivers", "FrameLatency", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\DXGKrnl", "MonitorLatencyTolerance", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\DXGKrnl", "MonitorRefreshLatencyTolerance", 1),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\DXGKrnl", "TdrLevel", 3),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\DXGKrnl", "TdrDelay", 10),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\DXGKrnl", "TdrDdiDelay", 10),
+        ]
+
+        for t in tweaks:
+             hkey, subkey, name, value = t[:4]
+             vtype = t[4] if len(t) == 5 else winreg.REG_DWORD
+             if not set_reg_key(hkey, subkey, name, value, vtype):
+                 success = False
+
+        return success
+
     def restore(self) -> bool:
+        if not winreg:
+            return False
+
+        set_reg_key(winreg.HKEY_LOCAL_MACHINE, r"SOFTWARE\Microsoft\Windows NT\CurrentVersion\Multimedia\SystemProfile", "SystemResponsiveness", 20)
+        set_reg_key(winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "menuShowDelay", "400", winreg.REG_SZ)
+        set_reg_key(winreg.HKEY_CURRENT_USER, r"Control Panel\Desktop", "MouseHoverTime", "400", winreg.REG_SZ)
+        set_reg_key(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Power", "Latency", 0)
+        delete_reg_key(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Control\Session Manager\kernel", "MinTimerResolution")
+
         return True
 
 class KeyboardMouseTweaks(BaseTweak):
     @property
     def name(self):
         return "Mouse & Keyboard"
+
     @property
     def description(self):
-        return "Tweaks for minimal input lag and precise control (Stub)."
+        return "Tweaks for minimal input lag and precise control."
+
     def apply(self) -> bool:
-        return True
+        if not winreg:
+            logger.error("Registry manipulation is only supported on Windows.")
+            return False
+
+        success = True
+
+        tweaks = [
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseSpeed", "0", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseThreshold1", "0", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseThreshold2", "0", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Software\Microsoft\Windows\CurrentVersion\PrecisionTouchPad", "EnablePrecision", 0),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\mouclass\Parameters", "MouseDataQueueSize", 64),
+            (winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\kbdclass\Parameters", "KeyboardDataQueueSize", 64),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "DoubleClickSpeed", "300", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Keyboard", "KeyboardDelay", "1", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Keyboard", "KeyboardSpeed", "31", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Accessibility\StickyKeys", "Flags", "506", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Accessibility\Keyboard Response", "Flags", "122", winreg.REG_SZ),
+            (winreg.HKEY_CURRENT_USER, r"Control Panel\Accessibility\ToggleKeys", "Flags", "58", winreg.REG_SZ),
+        ]
+
+        for t in tweaks:
+             hkey, subkey, name, value = t[:4]
+             vtype = t[4] if len(t) == 5 else winreg.REG_DWORD
+             if not set_reg_key(hkey, subkey, name, value, vtype):
+                 success = False
+
+        return success
+
     def restore(self) -> bool:
+        if not winreg:
+            return False
+
+        set_reg_key(winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseSpeed", "1", winreg.REG_SZ)
+        set_reg_key(winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseThreshold1", "6", winreg.REG_SZ)
+        set_reg_key(winreg.HKEY_CURRENT_USER, r"Control Panel\Mouse", "MouseThreshold2", "10", winreg.REG_SZ)
+        set_reg_key(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\mouclass\Parameters", "MouseDataQueueSize", 100)
+        set_reg_key(winreg.HKEY_LOCAL_MACHINE, r"SYSTEM\CurrentControlSet\Services\kbdclass\Parameters", "KeyboardDataQueueSize", 100)
+
         return True
 
 class PowerplanTweaks(BaseTweak):
