@@ -139,6 +139,7 @@ class GhostOptimizerUI:
                 tweak.description,
             )
 
+        table.add_section()
         table.add_row("A", "Apply All", "Применить все твики", style=f"bold {OK}")
         table.add_row("R", "Revert All", "Отменить все твики", style=f"bold {ERR}")
         table.add_row("Q", "Выход", "Закрыть приложение", style=MUTED)
