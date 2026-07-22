@@ -50,6 +50,7 @@ class GhostOptimizerUI:
             "13": OtherTweaks()
         }
         self.status_message = "Готов к работе"
+        self.status_style = OK
 
     # ------------------------------------------------------------------ #
     #  Header
@@ -167,7 +168,7 @@ class GhostOptimizerUI:
         hint.append(" Q ", style=f"bold {BG_PANEL} on {ACCENT}")
         hint.append(" Выход", style=MUTED)
 
-        status = Text(f"● {self.status_message}", style=f"{OK}")
+        status = Text(f"● {self.status_message}", style=f"{self.status_style}")
 
         table = Table.grid(expand=True)
         table.add_column(justify="left")
@@ -194,14 +195,17 @@ class GhostOptimizerUI:
 
     def apply_all(self):
         self.status_message = "Применяем все твики..."
+        self.status_style = ACCENT
         console.clear()
         for key in sorted(self.tweaks.keys(), key=int):
             self.run_task(key, wait_for_input=False)
         self.status_message = "Все твики применены успешно"
+        self.status_style = OK
         console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
 
     def revert_all(self):
         self.status_message = "Отменяем все твики..."
+        self.status_style = ACCENT
         console.clear()
         for key in sorted(self.tweaks.keys(), key=int):
             tweak = self.tweaks[key]
@@ -210,6 +214,7 @@ class GhostOptimizerUI:
                 tweak.restore()
             time.sleep(0.5)
         self.status_message = "Все твики отменены"
+        self.status_style = OK
         console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
 
     # ------------------------------------------------------------------ #
@@ -247,6 +252,7 @@ class GhostOptimizerUI:
         console.print()
         if success:
             self.status_message = f"{tweak.name} — успешно"
+            self.status_style = OK
             console.print(
                 Panel(
                     Align.center(Text(f"✓  {tweak.name} применено успешно", style=f"bold {OK}")),
@@ -256,6 +262,7 @@ class GhostOptimizerUI:
             )
         else:
             self.status_message = f"Ошибка: {tweak.name}"
+            self.status_style = ERR
             console.print(
                 Panel(
                     Align.center(Text(f"✗  Не удалось применить {tweak.name}", style=f"bold {ERR}")),
@@ -293,6 +300,7 @@ class GhostOptimizerUI:
                 self.run_task(choice)
             else:
                 self.status_message = "Некорректный выбор — попробуйте снова"
+                self.status_style = ERR
 
             console.clear()
 
