@@ -1,0 +1,3 @@
+## 2026-07-23 - Added Confirmations to Bulk Actions
+**Learning:** Terminal User Interfaces (TUIs) handling major destructive changes (like "Apply All" tweaks) should prompt users for confirmation before proceeding. It's a standard and expected pattern for CLI applications to prevent accidental large-scale mutations, and rich's `Confirm.ask` is a great way to do it compactly. Feedback text after processes finish is better when it tells users exactly what happens next (e.g. "press Enter to return to menu" instead of "press Enter to continue").
+**Action:** Always add confirmation dialogs using `rich.prompt.Confirm` for potentially destructive or large-scale actions in the TUI. Improve post-action feedback descriptions to be contextual.
