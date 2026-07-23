@@ -194,6 +194,13 @@ class GhostOptimizerUI:
         return layout
 
     def apply_all(self):
+        from rich.prompt import Confirm
+        console.clear()
+        if not Confirm.ask(f"[bold {ERR}]Вы уверены, что хотите применить ВСЕ твики?[/]", default=False):
+            self.status_message = "Применение всех твиков отменено"
+            self.status_style = MUTED
+            return
+
         self.status_message = "Применяем все твики..."
         self.status_style = ACCENT
         console.clear()
@@ -201,9 +208,16 @@ class GhostOptimizerUI:
             self.run_task(key, wait_for_input=False)
         self.status_message = "Все твики применены успешно"
         self.status_style = OK
-        console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
+        console.input(f"\n[{MUTED}]Нажмите Enter для возврата в меню...[/]")
 
     def revert_all(self):
+        from rich.prompt import Confirm
+        console.clear()
+        if not Confirm.ask(f"[bold {ERR}]Вы уверены, что хотите отменить ВСЕ твики?[/]", default=False):
+            self.status_message = "Отмена всех твиков прервана"
+            self.status_style = MUTED
+            return
+
         self.status_message = "Отменяем все твики..."
         self.status_style = ACCENT
         console.clear()
@@ -215,7 +229,7 @@ class GhostOptimizerUI:
             time.sleep(0.5)
         self.status_message = "Все твики отменены"
         self.status_style = OK
-        console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
+        console.input(f"\n[{MUTED}]Нажмите Enter для возврата в меню...[/]")
 
     # ------------------------------------------------------------------ #
     #  Выполнение задачи с прогресс-баром
@@ -272,7 +286,7 @@ class GhostOptimizerUI:
             )
 
         if wait_for_input:
-            console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
+            console.input(f"\n[{MUTED}]Нажмите Enter для возврата в меню...[/]")
 
     # ------------------------------------------------------------------ #
     #  Главный цикл
