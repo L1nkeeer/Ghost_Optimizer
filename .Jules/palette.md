@@ -1,0 +1,3 @@
+## 2024-05-18 - [Confirmation Dialogs for Bulk Actions]
+**Learning:** Enforcing confirmation dialogs for major bulk or destructive actions (such as 'Apply All' or 'Revert All') is a critical UX convention for this app. Without it, users might accidentally apply or revert all tweaks with a single misclick, leading to unexpected system changes.
+**Action:** When adding or modifying any bulk or potentially destructive actions in the TUI, ensure to use `rich.prompt.Confirm.ask()` to obtain explicit user consent before proceeding. Use appropriate styling (e.g., `ERR` color for warnings) to make the prompt clear and noticeable.
