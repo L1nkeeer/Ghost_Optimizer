@@ -8,6 +8,7 @@ from rich.text import Text
 from rich.box import ROUNDED, HEAVY, DOUBLE
 from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn
 from rich.rule import Rule
+from rich.prompt import Confirm
 
 from ghost_optimizer.utils.system import get_system_info
 from ghost_optimizer.tweaks.cleaner import TempCleaner
@@ -194,6 +195,8 @@ class GhostOptimizerUI:
         return layout
 
     def apply_all(self):
+        if not Confirm.ask(f"[{ERR}]Вы уверены, что хотите применить все твики?[/]", default=False):
+            return
         self.status_message = "Применяем все твики..."
         self.status_style = ACCENT
         console.clear()
@@ -204,6 +207,8 @@ class GhostOptimizerUI:
         console.input(f"\n[{MUTED}]Нажмите Enter для продолжения...[/]")
 
     def revert_all(self):
+        if not Confirm.ask(f"[{ERR}]Вы уверены, что хотите отменить все твики?[/]", default=False):
+            return
         self.status_message = "Отменяем все твики..."
         self.status_style = ACCENT
         console.clear()
